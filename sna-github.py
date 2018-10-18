@@ -11,7 +11,7 @@ G = nx.Graph()
 
 def usuarios():	
     #url1='https://api.github.com/search/users?q=+type:user+location:colombia'
-    url1='https://api.github.com/search/users?q=+type:user'
+    url1='https://api.github.com/search/users?q=+type:user+location:colombia+repos:>100+language:java&per_page=100'
     with urllib.request.urlopen(url1) as url:
         users= json.loads(url.read().decode())    
     for item in users['items']:
@@ -43,8 +43,11 @@ def seguidores(G, l_usu):
             try:       
                 with urllib.request.urlopen(url_seg) as url:
                     seguid= json.loads(url.read().decode())
-            except Exception as inst:                
+            except Exception as inst:   
+                print("#####función seguidores()######")             
                 print("error de conexión")
+                print(inst)
+                print("##############################")
                 return "false"               
             for item in seguid:
                 #del item['login']
@@ -84,23 +87,26 @@ def nodeMeasure_density(G):
 def nodeMeasure_degree(G):
     #print("G = ")
     #print(nx.degree(G).values())
-    G = nx.convert_node_labels_to_integers(G,first_label=1)
-    degree_sequence=sorted(nx.degree(G).values(),reverse=True)     
-    dmax=max(degree_sequence) 
-    dmin =min(degree_sequence)
+    #Gtemp = nx.convert_node_labels_to_integers(G,first_label=1)
+    #degree_sequence=sorted(nx.degree(Gtemp).values(),reverse=True)     
+    degrees = [val for (G, val) in G.degree()]
+    dmax=max(degrees) 
+    dmin =min(degrees)
 
-    print(degree_sequence)
+    print("############## degrees #############")    
+    print(degrees)
+    print("####################################")
+    print("################ dmax ##############")
     print(dmax)
+    print("##############################")
+    print("############# dmin #################")
     print(dmin)
+    print("####################################")
 
 #maximal-cliques in a graph
-def max_cliques(G):
-    nx.find_cliques(G)    
-    #plt.figure()
-    #nx.draw_networkx(G, pos, with_labels=False, alpha=0.4,font_size=0.0,node_size=10) 
-    #nx.draw_networkx(nx.find_cliques(G))
-    #plt.savefig("max_cliques.png")
-    print(list(nx.find_cliques(G)))
+def max_cliques(G):    
+    #print(list(nx.find_cliques(G)))
+    return nx.find_cliques(G)
 
 # Define get_nodes_and_nbrs()
 def get_nodes_and_nbrs(G, nodes_of_interest):
@@ -149,9 +155,45 @@ def nodes_in_triangle(G):
             list.append(n)
     return list
 
+# return a subgraph with the degree-1 egocentric network of the node n
+def degree_1_Network(G, n):        
+    vecinos = []
+    # Iterate over all possible triangle relationship combinations            
+    for m in G.neighbors(n):    
+            vecinos.append([n,m])                                       
+    return vecinos
+
+#return a subgraph with the degree-1-5 egocentric network of the node
+def degree_1_5_Network(G, n):        
+    vecinos = []
+    # Iterate over all possible triangle relationship combinations            
+    for m in G.neighbors(n):    
+           for o in G.neighbors(m):
+                 if G.has_edge(m,n) :
+                    vecinos.append([m,o])
+    return vecinos
+
+#return a subgraph with  the degree-2 egocentric network of the node
+def degree_2_Network(G, n):        
+    vecinos = []
+    # Iterate over all possible triangle relationship combinations            
+    for m in G.neighbors(n):
+            vecinos.append([n,m])
+            for o in G.neighbors(m):
+                    vecinos.append([m,o])
+                    for p in G.neighbors(o):
+                        vecinos.append([o,p])
+    return vecinos
+
 def main():  
     #se consultan los usuarios de github para el analisis
-    l_usuarios=usuarios()
+    try:
+        l_usuarios=usuarios()
+    except Exception as inst:
+        print("##############################")
+        print("error al obtener usuarios de la api de github")
+        print("##############################")
+        return
     #se consultan los seguidores de los usuarios seleccionados
     if seguidores(G, l_usuarios) != "false":
         ##############################
@@ -171,6 +213,7 @@ def main():
         plt.figure()
         #nx.draw_networkx(G, [1,2,3], with_labels=False, alpha=0.4,font_size=0.0,node_size=10) 
         nx.draw_networkx(G)
+        plt.show()
         plt.savefig("G.png")
         print("##############################")
         print("############ G ###############")
@@ -181,7 +224,8 @@ def main():
         ##############################
         #pintar los nodos del grafo              
         # plt.figure()        
-        # nx.draw_networkx(G.edges())        
+        # nx.draw_networkx(G.edges())       
+        # plt.show() 
         # plt.savefig("G.edges.png")
         print("##############################")
         print("######## G.edges() ###########")
@@ -196,23 +240,39 @@ def main():
         ##############################
 
         ##############################
-        #nodeMeasure_degree(G)
+        try:
+            nodeMeasure_degree(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar nodeMeasure_degree()")
+            print(inst)
+            print("##############################")
         ##############################
 
-        ##############################
-        #max_cliques(G)    
+        ##############################           
+        print("##############################")
+        print("####### max_cliques() ########")
+        print(list(max_cliques(G)))
+        try:
+            plt.figure()        
+            nx.draw_networkx(max_cliques(G))
+            plt.show()
+            plt.savefig("max_cliques.png")
+        except Exception as inst:
+            print("##############################")
+            print("error al pintar nx.draw_networkx(max_cliques(G)).")
+            print(inst)
+            print("##############################")
 
         ##############################
-        
-
-        
-
+                
         ##############################
         # Extract the subgraph with the nodes of interest: T_draw
         try:
             T_draw = get_nodes_and_nbrs(G, [10, 20])
             plt.figure()
             nx.draw_networkx(T_draw)
+            plt.show()
             plt.savefig("get_nodes_and_nbrs.png")
         except Exception as inst:
             print("##############################")
@@ -242,6 +302,43 @@ def main():
             print("##############################")
             print("nodes_in_triangle. The node is not in the graph")
             print("##############################")
+        
+        ############################## 
+        try:
+            print("######## degree_1_Network #########")
+            print(degree_1_Network(G, 1))
+            print("##############################")
+        except Exception as inst:
+            print("##############################")
+            print("degree_1_Network. There are not subgraph with the degree-1 egocentric network of the node")
+            print(inst)
+            print("##############################")
+        ############################## 
+
+        ############################## 
+        try:
+            print("######## degree_1_5_Network #########")
+            print(degree_1_5_Network(G, 1))
+            print("##############################")
+        except Exception as inst:
+            print("##############################")
+            print("degree_1_5_Network. There are not subgraph with the degree-1 egocentric network of the node")
+            print(inst)
+            print("##############################")
+        ##############################
+
+        ############################## 
+        try:
+            print("######## degree_2_Network #########")
+            print(degree_2_Network(G, 1))
+            print("##############################")
+        except Exception as inst:
+            print("##############################")
+            print("degree_2_Network. There are not subgraph with the degree-1 egocentric network of the node")
+            print(inst)
+            print("##############################")
+        ##############################
+                
 
     
 main()
