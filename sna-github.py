@@ -3,15 +3,18 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import pandas as pd
 from itertools import combinations
+from timeit import Timer
 
 import warnings
 warnings.filterwarnings('ignore')
 
+
 G = nx.Graph()
+
 
 def usuarios():	
     #url1='https://api.github.com/search/users?q=+type:user+location:colombia'
-    url1='https://api.github.com/search/users?q=+type:user+location:colombia+repos:>100+language:java&per_page=100'
+    url1='https://api.github.com/search/users?q=+type:user+location:colombia+repos:>10+language:javascript&per_page=50'
     with urllib.request.urlopen(url1) as url:
         users= json.loads(url.read().decode())    
     for item in users['items']:
@@ -34,43 +37,90 @@ def usuarios():
         del item['score']
         del item['repos_url']            
 	#return str(users['items'])
+    userDoc= open("users.txt","w+")
+    userDoc.write(str(users['items']))
+    userDoc.close() 
     return users['items']
 
 def seguidores(G, l_usu):
+    print("############## l_usu ###############")
+    print(l_usu)
+    print("#############################")
+    contadorFollowers = 0
+    contadorl_usu = 0
     try:
-        for u in l_usu:
-            url_seg=u['followers_url'] 
+        for u in l_usu:             
+            contadorl_usu = contadorl_usu + 1 
+            print("#####contador de ciclos a l_usu()######")                                 
+            #Timer.timeit(10.0, print(contadorl_usu))            
+            print(contadorl_usu)
+            print("##############################")                   
+            url_seg2=u['followers_url']             
             try:       
-                with urllib.request.urlopen(url_seg) as url:
-                    seguid= json.loads(url.read().decode())
+                with urllib.request.urlopen(url_seg2) as url:
+                    seguid= json.loads(url.read().decode()) 
+                    
             except Exception as inst:   
                 print("#####función seguidores()######")             
                 print("error de conexión")
                 print(inst)
                 print("##############################")
-                return "false"               
-            for item in seguid:
-                #del item['login']
-                del item['id']
-                del item['node_id']	
-                del item['avatar_url']
-                del item['gravatar_id']
-                del item['url']
-                del item['html_url']
-                del item['followers_url']
-                del item['following_url']
-                del item['gists_url']
-                del item['starred_url']
-                del item['subscriptions_url']
-                del item['organizations_url']
-                del item['repos_url']
-                del item['events_url']
-                del item['received_events_url']
-                del item['type']
-                del item['site_admin']		
+                return "false"  
+            FollowersDoc= open("seguidores.txt","w+")                   
+            FollowersDoc.write(str(seguid))
+            FollowersDoc.close()              
+            # for item in seguid:
+            #     #del item['login']
+            #     del item['id']
+            #     del item['node_id']	
+            #     del item['avatar_url']
+            #     del item['gravatar_id']
+            #     del item['url']
+            #     del item['html_url']
+            #     del item['followers_url']
+            #     del item['following_url']
+            #     del item['gists_url']
+            #     del item['starred_url']
+            #     del item['subscriptions_url']
+            #     del item['organizations_url']
+            #     del item['repos_url']
+            #     del item['events_url']
+            #     del item['received_events_url']
+            #     del item['type']
+            #     del item['site_admin']		
             for s in seguid:
+                # contadorFollowers = contadorFollowers + 1
+                # print("#####contador de llamdos a follower()######")                                 
+                # print(contadorFollowers)
+                # print("##############################")
+                
                 G.add_edge(u['login'],s['login'])
-            return "true"        
+                                
+                print("##############################")   
+                print("#####u['login']############")
+                print(u['login'])
+                print("#####s['login']############")
+                print(s['login'])
+                print("##############################") 
+                # for f in s['items']:                
+                #     url_seg2=f['followers_url']             
+                #     try:       
+                #         with urllib.request.urlopen(url_seg2) as url:
+                #             githubUsers= json.loads(url.read().decode())                            
+                #     except Exception as inst: 
+                #         print("##############################")
+                #         print("error al consultar followerFromInitUser")
+                #         print(inst)
+                #         print("##############################")
+                #     for followerFromInitUser in githubUsers:
+                #         G.add_edge(s['login'],followerFromInitUser['login'])                        
+                #         print("########followerFromInitUser#######")   
+                #         print("#####u['login']############")
+                #         print(s['login'])
+                #         print("#####s['login']############")
+                #         print(followerFromInitUser['login'])
+                #         print("##############################")               
+        return "true"        
     except ValueError:
         print ("error en la conexión")
         return "false" 	
@@ -185,6 +235,14 @@ def degree_2_Network(G, n):
                         vecinos.append([o,p])
     return vecinos
 
+def distanceMeasures(G):
+    #print("average",nx.average_shortest_path_length(G)) #Average distance between every pair of nodes.
+    print("diameter",nx.diameter(G)) #maximum distance between any pair of nodes.
+    print("eccen",nx.eccentricity(G)) #of a node n is the largest distance between n and all other nodes.
+    print("radius",nx.radius(G)) #Minimum eccentricity.
+    print("periphery",nx.periphery(G)) #Set of nodes that have eccentricity equal to the diameter.
+    print("center",nx.center(G)) #set of nodes that have eccentricity equal to the radius.
+
 def main():  
     #se consultan los usuarios de github para el analisis
     try:
@@ -192,6 +250,7 @@ def main():
     except Exception as inst:
         print("##############################")
         print("error al obtener usuarios de la api de github")
+        print(inst)
         print("##############################")
         return
     #se consultan los seguidores de los usuarios seleccionados
@@ -212,14 +271,18 @@ def main():
         #pintar el grafo con el dataset consultado a github
         plt.figure()
         #nx.draw_networkx(G, [1,2,3], with_labels=False, alpha=0.4,font_size=0.0,node_size=10) 
-        nx.draw_networkx(G)
-        plt.show()
+        nx.draw_networkx(G)    
         plt.savefig("G.png")
+        plt.show()
         print("##############################")
         print("############ G ###############")
-        print(G)  
+        print(G)
+        graphDoc= open("graph.txt","w+")                   
+        graphDoc.write(print(G))
+        graphDoc.close()      
         print("##############################")
         ##############################
+        
 
         ##############################
         #pintar los nodos del grafo              
@@ -230,6 +293,9 @@ def main():
         print("##############################")
         print("######## G.edges() ###########")
         print(G.edges())  
+        graphDoc= open("graph_edges.txt","w+")                   
+        graphDoc.write(str(G.edges()))
+        graphDoc.close()
         print("##############################")
         ##############################
 
@@ -276,7 +342,8 @@ def main():
             plt.savefig("get_nodes_and_nbrs.png")
         except Exception as inst:
             print("##############################")
-            print("get_nodes_and_nbrs. NetworkXError. The node(nodes) is(are) not in the graph.")
+            print("exception in get_nodes_and_nbrs")
+            print(inst)
             print("##############################")
                     
         ##############################
@@ -291,7 +358,8 @@ def main():
             print("##############################")
         except Exception as inst:
             print("##############################")
-            print("is_in_triangle. The node is not in the graph")
+            print("exception in is_in_triangle.")
+            print(inst)
             print("##############################")
         ##############################        
 
@@ -300,7 +368,8 @@ def main():
             nodes_in_triangle(T_draw)
         except Exception as inst:
             print("##############################")
-            print("nodes_in_triangle. The node is not in the graph")
+            print("exception in nodes_in_triangle")
+            print(inst)
             print("##############################")
         
         ############################## 
@@ -310,7 +379,7 @@ def main():
             print("##############################")
         except Exception as inst:
             print("##############################")
-            print("degree_1_Network. There are not subgraph with the degree-1 egocentric network of the node")
+            print("exception degree_1_Network")
             print(inst)
             print("##############################")
         ############################## 
@@ -338,7 +407,17 @@ def main():
             print(inst)
             print("##############################")
         ##############################
-                
 
-    
+        ############################## 
+        try:
+            print("######## DistanceMeasures #########")
+            distanceMeasures(G)
+            print("##############################")
+        except Exception as inst:
+            print("##############################")
+            print("DistanceMeasures Exception")
+            print(inst)
+            print("##############################")
+        ##############################
+                    
 main()
