@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from itertools import combinations
 from timeit import Timer
+import datetime
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -96,12 +97,12 @@ def seguidores(G, l_usu):
                 
                 G.add_edge(u['login'],s['login'])
                                 
-                print("##############################")   
-                print("#####u['login']############")
-                print(u['login'])
-                print("#####s['login']############")
-                print(s['login'])
-                print("##############################") 
+                # print("##############################")   
+                # print("#####u['login']############")
+                # print(u['login'])
+                # print("#####s['login']############")
+                # print(s['login'])
+                # print("##############################") 
                 # for f in s['items']:                
                 #     url_seg2=f['followers_url']             
                 #     try:       
@@ -130,6 +131,7 @@ def seguidores(G, l_usu):
 def nodeMeasure_density(G): 
     G = nx.convert_node_labels_to_integers(G,first_label=1)
     density = nx.density(G)
+    print(density)
     return density
 
 # métricas de Nodos
@@ -153,9 +155,67 @@ def nodeMeasure_degree(G):
     print(dmin)
     print("####################################")
 
+def centrality(G):
+    G = nx.convert_node_labels_to_integers(G,first_label=1)
+    degCent = nx.degree_centrality(G)
+    #sorted_by_value = sorted(degCent)
+    sorted_by_value = sorted(degCent.items(), key=lambda kv: kv[1])
+    #sorted_by_value
+    # print("############centrality - degCent#################")    
+    # print(degCent)
+    # print("##############################")
+    graphDoc= open("degree_centrality.txt","w+")                   
+    graphDoc.write(str(degCent))
+    graphDoc.close()   
+    # print("###############centrality - sorted_by_value###############")
+    # print(sorted_by_value)
+    # print("##############################")
+    graphDoc= open("degree_centrality_sorted_by_value.txt","w+")                   
+    graphDoc.write(str(sorted_by_value))
+    graphDoc.close() 
+
+def centralityTopFive(G):
+    G = nx.convert_node_labels_to_integers(G,first_label=1)
+    degCent = nx.degree_centrality(G)
+    #sorted_by_value = sorted(degCent)
+    sorted_by_value = sorted(degCent.items(), key=lambda kv: kv[1], reverse=True)
+    top_five=sorted_by_value[0:5]
+    graphDoc= open("centralityTopFive.txt","w+")                   
+    graphDoc.write(str(top_five))
+    graphDoc.close() 
+    #print(top_five)
+
+def closenessCentrality(G):
+    closeCent = nx.closeness_centrality(G)
+    graphDoc= open("closeness_centrality.txt","w+")                   
+    graphDoc.write(str(closeCent))
+    graphDoc.close() 
+    #print(closeCent)
+
+def betweennessCentrality(G):
+    G = nx.barbell_graph(m1=5, m2=1)
+    betweCent=nx.betweenness_centrality(G)
+    graphDoc= open("betweenness_centrality.txt","w+")                   
+    graphDoc.write(str(betweCent))
+    graphDoc.close()
+    #print(betweCent)
+
+def eigenvectorCentrality(G):
+    eigenCent = nx.eigenvector_centrality(G)
+    #print(eigenCent)
+    graphDoc= open("eigenvector_centrality.txt","w+")                   
+    graphDoc.write(str(eigenCent))
+    graphDoc.close()
+
 #maximal-cliques in a graph
 def max_cliques(G):    
-    #print(list(nx.find_cliques(G)))
+    #print(list(nx.find_cliques(G)))    
+    # print("##############################")
+    # print("####### max_cliques() ########")
+    # print(list(nx.find_cliques(G)))
+    graphDoc= open("find_cliques.txt","w+")                   
+    graphDoc.write(str(list(nx.find_cliques(G))))
+    graphDoc.close()
     return nx.find_cliques(G)
 
 # Define get_nodes_and_nbrs()
@@ -176,7 +236,9 @@ def get_nodes_and_nbrs(G, nodes_of_interest):
         
             # Append the neighbors of n to nodes_to_draw
             nodes_to_draw.append(nbr)
-            
+    graphDoc= open("get_nodes_and_nbrs.txt","w+")                   
+    graphDoc.write(str(G.subgraph(nodes_to_draw)))
+    graphDoc.close()            
     return G.subgraph(nodes_to_draw)
 
 # Define is_in_triangle() 
@@ -243,6 +305,37 @@ def distanceMeasures(G):
     print("periphery",nx.periphery(G)) #Set of nodes that have eccentricity equal to the diameter.
     print("center",nx.center(G)) #set of nodes that have eccentricity equal to the radius.
 
+def draw(graph_to_draw, nameOfDraw):
+    try:
+        plt.figure()
+        nx.draw_networkx(graph_to_draw)
+        plt.show()
+        plt.savefig(nameOfDraw + datetime.datetime.now() +"x.png")        
+    except Exception as inst:
+        print("##############################")
+        print("error al crear gráfica:")
+        print(nameOfDraw)
+        print(inst)
+        print("##############################")
+
+def graph_is_connected(G):
+    print("############## is_connected: ################")    
+    print(nx.is_connected(G))
+    print("##############  ################")    
+
+def graph_number_connected_components(G):
+    #G.remove_node(0) 
+    print("############## number_connected_components ################")    
+    print(nx.number_connected_components(G))
+    print("############## sorted connected_components ################")    
+    print(sorted(nx.connected_components(G)))
+
+def simplePaths(G):
+    G.nodes()
+    paths=nx.all_simple_paths(G, source=9, target=26)
+    type(paths)
+    print(paths)
+
 def main():  
     #se consultan los usuarios de github para el analisis
     try:
@@ -267,18 +360,37 @@ def main():
         print("si existen usuarios y seguidores. Se ha creado correctamente el dataset y el grafo")
         print("##############################")
 
+        try:
+            graph_is_connected(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar graph_is_connected()")
+            print(inst)
+            print("##############################")
+        ##############################     
+                
+        try:
+            graph_number_connected_components(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar graph_is_connected()")
+            print(inst)
+            print("##############################")   
+
         ##############################
         #pintar el grafo con el dataset consultado a github
-        plt.figure()
-        #nx.draw_networkx(G, [1,2,3], with_labels=False, alpha=0.4,font_size=0.0,node_size=10) 
-        nx.draw_networkx(G)    
-        plt.savefig("G.png")
-        plt.show()
+        # plt.figure()
+        # #nx.draw_networkx(G, [1,2,3], with_labels=False, alpha=0.4,font_size=0.0,node_size=10) 
+        # nx.draw_networkx(G)    
+        # plt.savefig("G.png")
+        # plt.show()
+        draw(G, "grafo")
+
         print("##############################")
         print("############ G ###############")
         print(G)
-        graphDoc= open("graph.txt","w+")                   
-        graphDoc.write(print(G))
+        graphDoc= open("network-graph.txt","w+")                   
+        graphDoc.write(str(G))
         graphDoc.close()      
         print("##############################")
         ##############################
@@ -293,16 +405,23 @@ def main():
         print("##############################")
         print("######## G.edges() ###########")
         print(G.edges())  
-        graphDoc= open("graph_edges.txt","w+")                   
+        graphDoc= open("network-graph_edges.txt","w+")                   
         graphDoc.write(str(G.edges()))
         graphDoc.close()
+        draw(G.edges(), "G.edges()")
         print("##############################")
         ##############################
 
         
 
-        ##############################
-        #print(nodeMeasure_density(G))
+        ##############################        
+        try:
+            nodeMeasure_density(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar nodeMeasure_density()")
+            print(inst)
+            print("##############################")
         ##############################
 
         ##############################
@@ -314,19 +433,53 @@ def main():
             print(inst)
             print("##############################")
         ##############################
-
-        ##############################           
-        print("##############################")
-        print("####### max_cliques() ########")
-        print(list(max_cliques(G)))
+        
         try:
-            plt.figure()        
-            nx.draw_networkx(max_cliques(G))
-            plt.show()
-            plt.savefig("max_cliques.png")
+            centrality(G)
         except Exception as inst:
             print("##############################")
-            print("error al pintar nx.draw_networkx(max_cliques(G)).")
+            print("error al ejecutar centrality():")
+            print(inst)
+            print("##############################")
+        ##############################
+
+        try:
+            centralityTopFive(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar centralityTopFive():")
+            print(inst)
+            print("##############################")
+        ##############################
+
+        try:
+            betweennessCentrality(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar betweennessCentrality():")
+            print(inst)
+            print("##############################")
+        ##############################        
+
+        try:
+            closenessCentrality(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar closenessCentrality():")
+            print(inst)
+            print("##############################")
+        ##############################
+        
+        ##############################                   
+        try:
+            # plt.figure()        
+            # nx.draw_networkx(max_cliques(G))
+            # plt.show()
+            # plt.savefig("max_cliques.png")
+            draw(max_cliques(G), "max_cliques")
+        except Exception as inst:
+            print("##############################")
+            print("Exception nx.draw_networkx(max_cliques(G)).")
             print(inst)
             print("##############################")
 
@@ -335,7 +488,7 @@ def main():
         ##############################
         # Extract the subgraph with the nodes of interest: T_draw
         try:
-            T_draw = get_nodes_and_nbrs(G, [10, 20])
+            T_draw = get_nodes_and_nbrs(G, ['angelbotto', 'Medellic'])
             plt.figure()
             nx.draw_networkx(T_draw)
             plt.show()
@@ -351,10 +504,9 @@ def main():
         ##############################
         try:
             print("##############################")
-            print(is_in_triangle(G,15))
-            print("##############################")
-            print("##############################")
-            print(is_in_triangle(G,3))
+            print(is_in_triangle(G, "angelbotto"))            
+            # print("##############################")
+            # print(is_in_triangle(G,6))
             print("##############################")
         except Exception as inst:
             print("##############################")
@@ -365,7 +517,7 @@ def main():
 
         #the graph nodes that are in a triangle_clique
         try:
-            nodes_in_triangle(T_draw)
+            nodes_in_triangle(G)
         except Exception as inst:
             print("##############################")
             print("exception in nodes_in_triangle")
@@ -375,7 +527,7 @@ def main():
         ############################## 
         try:
             print("######## degree_1_Network #########")
-            print(degree_1_Network(G, 1))
+            print(degree_1_Network(G, "angelbotto"))
             print("##############################")
         except Exception as inst:
             print("##############################")
@@ -387,7 +539,7 @@ def main():
         ############################## 
         try:
             print("######## degree_1_5_Network #########")
-            print(degree_1_5_Network(G, 1))
+            print(degree_1_5_Network(G, "angelbotto"))
             print("##############################")
         except Exception as inst:
             print("##############################")
@@ -399,7 +551,7 @@ def main():
         ############################## 
         try:
             print("######## degree_2_Network #########")
-            print(degree_2_Network(G, 1))
+            print(degree_2_Network(G, 'angelbotto'))
             print("##############################")
         except Exception as inst:
             print("##############################")
