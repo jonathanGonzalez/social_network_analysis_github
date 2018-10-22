@@ -47,7 +47,7 @@ def seguidores(G, l_usu):
     print("############## l_usu ###############")
     print(l_usu)
     print("#############################")
-    contadorFollowers = 0
+    #contadorFollowers = 0
     contadorl_usu = 0
     try:
         for u in l_usu:             
@@ -131,6 +131,9 @@ def seguidores(G, l_usu):
 def nodeMeasure_density(G): 
     G = nx.convert_node_labels_to_integers(G,first_label=1)
     density = nx.density(G)
+    print("############## density #############")    
+    print(density)
+    print("####################################")
     print(density)
     return density
 
@@ -175,7 +178,7 @@ def centrality(G):
     graphDoc.close() 
 
 def centralityTopFive(G):
-    G = nx.convert_node_labels_to_integers(G,first_label=1)
+    #G = nx.convert_node_labels_to_integers(G,first_label=1)
     degCent = nx.degree_centrality(G)
     #sorted_by_value = sorted(degCent)
     sorted_by_value = sorted(degCent.items(), key=lambda kv: kv[1], reverse=True)
@@ -183,22 +186,40 @@ def centralityTopFive(G):
     graphDoc= open("centralityTopFive.txt","w+")                   
     graphDoc.write(str(top_five))
     graphDoc.close() 
-    #print(top_five)
+    return top_five
 
 def closenessCentrality(G):
     closeCent = nx.closeness_centrality(G)
     graphDoc= open("closeness_centrality.txt","w+")                   
     graphDoc.write(str(closeCent))
     graphDoc.close() 
-    #print(closeCent)
+    return closeCent
+
+def closenessCentralityTopFive(G):
+    closeCent = nx.closeness_centrality(G)
+    sorted_by_value = sorted(closeCent.items(), key=lambda kv: kv[1])
+    closeness_top_five=sorted_by_value[0:5]    
+    graphDoc= open("closeness_centralityTopFive.txt","w+")                   
+    graphDoc.write(str(closeness_top_five))
+    graphDoc.close()
+    return closeness_top_five
 
 def betweennessCentrality(G):
-    G = nx.barbell_graph(m1=5, m2=1)
+    #G = nx.barbell_graph(m1=5, m2=1)
     betweCent=nx.betweenness_centrality(G)
     graphDoc= open("betweenness_centrality.txt","w+")                   
     graphDoc.write(str(betweCent))
     graphDoc.close()
     #print(betweCent)
+
+def betweennessCentralityTopFive(G):
+    betweCent=nx.betweenness_centrality(G)
+    sorted_by_value = sorted(betweCent.items(), key=lambda kv: kv[1], reverse=True)
+    betweenness_top_five=sorted_by_value[0:5]  
+    graphDoc= open("betweenness_top_five_TopFive.txt","w+")                   
+    graphDoc.write(str(betweenness_top_five))
+    graphDoc.close()  
+
 
 def eigenvectorCentrality(G):
     eigenCent = nx.eigenvector_centrality(G)
@@ -206,6 +227,20 @@ def eigenvectorCentrality(G):
     graphDoc= open("eigenvector_centrality.txt","w+")                   
     graphDoc.write(str(eigenCent))
     graphDoc.close()
+
+def eigenvectorCentralityTopFive(G):
+    eigenCent = nx.eigenvector_centrality(G)
+    #print(eigenCent)    
+    sorted_by_value = sorted(eigenCent.items(), key=lambda kv: kv[1], reverse=True)
+    eigenvector_top_five=sorted_by_value[0:5]
+    graphDoc= open("eigenvector_centrality_topFive.txt","w+")                   
+    graphDoc.write(str(eigenvector_top_five))
+    graphDoc.close()
+    #print(eigenvector_top_five)
+
+def intersection(lst1, lst2):
+    lst3 = [value for value in lst1 if value in lst2]
+    print(lst3)
 
 #maximal-cliques in a graph
 def max_cliques(G):    
@@ -329,12 +364,15 @@ def graph_number_connected_components(G):
     print(nx.number_connected_components(G))
     print("############## sorted connected_components ################")    
     print(sorted(nx.connected_components(G)))
+    print("#############################")    
 
 def simplePaths(G):
     G.nodes()
     paths=nx.all_simple_paths(G, source=9, target=26)
     type(paths)
+    print("############## all_simple_paths ################")    
     print(paths)
+    print("#############################")    
 
 def main():  
     #se consultan los usuarios de github para el analisis
@@ -376,6 +414,14 @@ def main():
             print("error al ejecutar graph_is_connected()")
             print(inst)
             print("##############################")   
+
+        try:
+            simplePaths(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar simplePaths()")
+            print(inst)
+            print("##############################")
 
         ##############################
         #pintar el grafo con el dataset consultado a github
@@ -451,7 +497,6 @@ def main():
             print(inst)
             print("##############################")
         ##############################
-
         try:
             betweennessCentrality(G)
         except Exception as inst:
@@ -459,7 +504,35 @@ def main():
             print("error al ejecutar betweennessCentrality():")
             print(inst)
             print("##############################")
-        ##############################        
+        ##############################            
+        ##############################
+        try:
+            betweennessCentralityTopFive(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar betweennessCentralityTopFive():")
+            print(inst)
+            print("##############################")
+        ############################## 
+
+        ##############################
+        try:
+            eigenvectorCentrality(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar eigenvectorCentrality():")
+            print(inst)
+            print("##############################")
+        ##############################              
+        
+        try:
+            eigenvectorCentralityTopFive(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar eigenvectorCentralityTopFive():")
+            print(inst)
+            print("##############################")
+        ##############################          
 
         try:
             closenessCentrality(G)
@@ -469,6 +542,23 @@ def main():
             print(inst)
             print("##############################")
         ##############################
+        
+        try:
+            closenessCentralityTopFive(G)
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar closenessCentralityTopFive():")
+            print(inst)
+            print("##############################")
+        ##############################
+                 
+        try:
+            intersection(closenessCentralityTopFive(G), centralityTopFive(G))            
+        except Exception as inst:
+            print("##############################")
+            print("error al ejecutar intersection():")
+            print(inst)
+            print("##############################")
         
         ##############################                   
         try:
@@ -488,7 +578,7 @@ def main():
         ##############################
         # Extract the subgraph with the nodes of interest: T_draw
         try:
-            T_draw = get_nodes_and_nbrs(G, ['angelbotto', 'Medellic'])
+            T_draw = get_nodes_and_nbrs(G, ['angelbotto'])
             plt.figure()
             nx.draw_networkx(T_draw)
             plt.show()
