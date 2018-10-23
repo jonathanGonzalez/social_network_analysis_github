@@ -44,15 +44,15 @@ def usuarios():
     return users['items']
 
 def seguidores(G, l_usu):
-    print("############## l_usu ###############")
-    print(l_usu)
-    print("#############################")
+    # print("############## l_usu ###############")
+    # print(l_usu)
+    # print("#############################")
     #contadorFollowers = 0
     contadorl_usu = 0
     try:
         for u in l_usu:             
             contadorl_usu = contadorl_usu + 1 
-            print("#####contador de ciclos a l_usu()######")                                 
+            #print("#####contador de ciclos a l_usu()######")                                 
             #Timer.timeit(10.0, print(contadorl_usu))            
             print(contadorl_usu)
             print("##############################")                   
@@ -240,7 +240,9 @@ def eigenvectorCentralityTopFive(G):
 
 def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in lst2]
-    print(lst3)
+    graphDoc= open("intersection_of_nodes_in_topFive.txt","w+")                   
+    graphDoc.write(str(lst3))
+    graphDoc.close()    
 
 #maximal-cliques in a graph
 def max_cliques(G):    
@@ -292,6 +294,9 @@ def is_in_triangle(G, n):
         if G.has_edge(n1, n2):
             in_triangle = True
             break
+    print("############## in_triangle: ################")    
+    print(in_triangle)
+    print("##############  ################")    
     return in_triangle
 
 #function that return all of the graph nodes that are in a triangle_clique
@@ -300,6 +305,12 @@ def nodes_in_triangle(G):
     for n in G.nodes():
         if is_in_triangle(G, n):
             list.append(n)
+    # print("############## nodes_in_triangle: ################")    
+    # print(list)
+    # print("##############  ################") 
+    graphDoc= open("nodes_in_triangle.txt","w+")                   
+    graphDoc.write(str(list))
+    graphDoc.close()      
     return list
 
 # return a subgraph with the degree-1 egocentric network of the node n
@@ -308,6 +319,9 @@ def degree_1_Network(G, n):
     # Iterate over all possible triangle relationship combinations            
     for m in G.neighbors(n):    
             vecinos.append([n,m])                                       
+    graphDoc= open("degree_1_Network.txt","w+")                   
+    graphDoc.write(str(vecinos))
+    graphDoc.close() 
     return vecinos
 
 #return a subgraph with the degree-1-5 egocentric network of the node
@@ -318,6 +332,9 @@ def degree_1_5_Network(G, n):
            for o in G.neighbors(m):
                  if G.has_edge(m,n) :
                     vecinos.append([m,o])
+    graphDoc= open("degree_1_5_Network.txt","w+")                   
+    graphDoc.write(str(vecinos))
+    graphDoc.close() 
     return vecinos
 
 #return a subgraph with  the degree-2 egocentric network of the node
@@ -330,6 +347,9 @@ def degree_2_Network(G, n):
                     vecinos.append([m,o])
                     for p in G.neighbors(o):
                         vecinos.append([o,p])
+    graphDoc= open("degree_2_Network.txt","w+")                   
+    graphDoc.write(str(vecinos))
+    graphDoc.close() 
     return vecinos
 
 def distanceMeasures(G):
@@ -362,9 +382,15 @@ def graph_number_connected_components(G):
     #G.remove_node(0) 
     print("############## number_connected_components ################")    
     print(nx.number_connected_components(G))
-    print("############## sorted connected_components ################")    
-    print(sorted(nx.connected_components(G)))
-    print("#############################")    
+    print("#############################")
+    #print("############## sorted connected_components ################")    
+    #print(sorted(nx.connected_components(G)))
+    #print("#############################")
+    graphDoc= open("sorted_connected_components.txt","w+")                   
+    graphDoc.write(str(sorted(nx.connected_components(G))))
+    graphDoc.close()    
+
+print(sorted(nx.connected_components(G))) 
 
 def simplePaths(G):
     G.nodes()
@@ -372,7 +398,50 @@ def simplePaths(G):
     type(paths)
     print("############## all_simple_paths ################")    
     print(paths)
-    print("#############################")    
+    print("#############################")
+
+def draw2(G, nameOfDraw):    
+    try:
+        pos = nx.get_node_attributes(G, 'login')    
+        plt.figure()        
+        nx.draw_networkx(G, pos)
+        plt.show()
+        plt.savefig(nameOfDraw + datetime.datetime.now() +"x.png")        
+    except Exception as inst:
+        print("##############################")
+        print("error al crear gráfica:")
+        print(nameOfDraw)
+        print(inst)
+        print("##############################")
+
+def draw3(G, nameOfDraw):    
+    try:                        
+        plt.figure(figsize=(10,7))
+        nx.draw_networkx(G, alpha=0.7, with_labels=False, edge_color='.4')
+        plt.axis('off')
+        plt.tight_layout()
+        plt.show()
+        plt.savefig(nameOfDraw + datetime.datetime.now() +"x.png")        
+    except Exception as inst:
+        print("##############################")
+        print("error al crear gráfica:")
+        print(nameOfDraw)
+        print(inst)
+        print("##############################")
+
+def draw4(G, nameOfDraw):
+    try:                        
+        plt.figure()
+        nx.draw_networkx(G)        
+        plt.tight_layout()
+        plt.show()
+        plt.savefig(nameOfDraw + datetime.datetime.now() +"x.png")        
+    except Exception as inst:
+        print("##############################")
+        print("error al crear gráfica:")
+        print(nameOfDraw)
+        print(inst)
+        print("##############################")
 
 def main():  
     #se consultan los usuarios de github para el analisis
@@ -431,6 +500,7 @@ def main():
         # plt.savefig("G.png")
         # plt.show()
         draw(G, "grafo")
+        draw3(G, "grafo-tight_layout")
 
         print("##############################")
         print("############ G ###############")
@@ -593,7 +663,7 @@ def main():
 
         ##############################
         try:
-            print("##############################")
+            print("###############is_in_triangle###############")
             print(is_in_triangle(G, "angelbotto"))            
             # print("##############################")
             # print(is_in_triangle(G,6))
@@ -658,6 +728,36 @@ def main():
         except Exception as inst:
             print("##############################")
             print("DistanceMeasures Exception")
+            print(inst)
+            print("##############################")
+        ##############################
+
+        ############################## 
+        try:            
+            draw2(max_cliques(G), "max_cliques")            
+        except Exception as inst:
+            print("##############################")
+            print("draw2 max_cliques Exception")
+            print(inst)
+            print("##############################")
+        ##############################
+
+        ############################## 
+        try:            
+            draw3(G, "draw3")            
+        except Exception as inst:
+            print("##############################")
+            print("draw3 Exception")
+            print(inst)
+            print("##############################")
+        ##############################
+
+        ############################## 
+        try:            
+            draw4(G, "draw4")            
+        except Exception as inst:
+            print("##############################")
+            print("draw4 Exception")
             print(inst)
             print("##############################")
         ##############################
